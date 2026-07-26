@@ -1,5 +1,6 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
+import { useAuth } from '@/auth/AuthContext'
 
 type NavItem = { to: string; label: string }
 
@@ -23,9 +24,16 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
   ],
 }
 
-export function Navbar({ role = 'public', right }: { role?: string; right?: React.ReactNode }) {
+export function Navbar() {
   const { pathname } = useLocation()
-  const items = NAV_BY_ROLE[role] ?? NAV_BY_ROLE.public
+  const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
+  const items = NAV_BY_ROLE[user?.role ?? 'public'] ?? NAV_BY_ROLE.public
+
+  function handleSignOut() {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <header className="sticky top-0 z-20 border-b border-ink-200 bg-white/90 backdrop-blur">
@@ -52,7 +60,35 @@ export function Navbar({ role = 'public', right }: { role?: string; right?: Reac
             )
           })}
         </div>
-        <div className="ml-auto flex items-center gap-3">{right}</div>
+        <div className="ml-auto flex items-center gap-3">
+          {isAuthenticated && user ? (
+            <>
+              <span className="text-sm font-medium text-ink-600">{user.user_name}</span>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/register"
+                className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                Register
+              </Link>
+            </>
+          )}
+        </div>
       </nav>
     </header>
   )

@@ -1,0 +1,118 @@
+export type Role = 'admin' | 'EIC' | 'SC' | 'author'
+
+/** Internal statuses (EIC/SC/admin) plus the coarser values authors receive. */
+export type ArticleStatus =
+  | 'submitted'
+  | 'assigned_to_sc'
+  | 'abstract_review_complete'
+  | 'abstract_accepted'
+  | 'rejected'
+  | 'full_paper_submitted'
+  | 'full_paper_review_complete'
+  | 'revision_needed'
+  | 'accepted'
+  | 'under_review'
+
+export interface Article {
+  id_article: string
+  title: string
+  authors: string
+  abstract: string
+  keywords: string | null
+  abstract_file_path: string
+  full_paper_file_path: string | null
+  status: ArticleStatus
+  id_user: string
+  id_topic: string | null
+  id_recommended_journal: string | null
+  reviewers: string[]
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export interface ArticleVersion {
+  id_version: string
+  id_article: string
+  phase: 'abstract' | 'full_paper'
+  version_number: number
+  file_path: string
+  submitted_by: string
+  submitted_at: string
+}
+
+export interface Review {
+  id_review: string
+  id_version: string
+  id_reviewer: string
+  decision: 'accept' | 'reject' | 'revision'
+  notes: string | null
+  reviewed_at: string
+}
+
+export interface User {
+  id_user: string
+  user_name: string
+  institution_name: string | null
+  email: string
+  phone_number: string | null
+  created_at: string
+  role: Role
+  occupation_name: string | null
+  deleted_at: string | null
+}
+
+export interface SubTopic {
+  id_sub_topic: string
+  name: string
+  id_topic: string
+}
+
+export interface Topic {
+  id_topic: string
+  topic_name: string
+  stem: SubTopic[]
+  humanity: SubTopic[]
+  interdisciplinary: SubTopic[]
+}
+
+export interface Journal {
+  id_journal: string
+  journal_name: string
+}
+
+export interface Occupation {
+  id_occupation: string
+  occupation_name: string
+}
+
+export interface TimelineItem {
+  id_timeline: string
+  title: string
+  description: string | null
+  start_date: string
+  end_date: string
+  created_at: string
+}
+
+export interface AuditEntry {
+  id_audit: string
+  id_actor: string | null
+  action: string
+  entity_type: string
+  entity_id: string | null
+  detail: Record<string, unknown> | null
+  created_at: string
+}
+
+export interface TokenResponse {
+  access_token: string
+  token_type: string
+  id_user: string
+  user_name: string
+  role: Role
+}
+
+export interface UploadResponse {
+  file_path: string
+}
