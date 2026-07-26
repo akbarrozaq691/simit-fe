@@ -13,6 +13,10 @@ import { SubmitAbstract } from '@/pages/author/SubmitAbstract'
 import { ArticleDetail } from '@/pages/author/ArticleDetail'
 import { ReviewQueue } from '@/pages/reviewer/ReviewQueue'
 import { ReviewDetail } from '@/pages/reviewer/ReviewDetail'
+import { EditorialDashboard } from '@/pages/editorial/EditorialDashboard'
+import { ArticleManage } from '@/pages/editorial/ArticleManage'
+import { Journals } from '@/pages/editorial/Journals'
+import { TimelineAdmin } from '@/pages/editorial/TimelineAdmin'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -37,7 +41,13 @@ export default function App() {
                 <Route path="/review" element={<ReviewQueue />} />
                 <Route path="/review/:id" element={<ReviewDetail />} />
               </Route>
-              {/* Role-gated groups are added by Tasks 6-7 */}
+              <Route element={<RequireRole roles={['EIC']} />}>
+                <Route path="/editorial" element={<EditorialDashboard />} />
+                <Route path="/editorial/journals" element={<Journals />} />
+                <Route path="/editorial/timeline" element={<TimelineAdmin />} />
+                <Route path="/editorial/:id" element={<ArticleManage />} />
+              </Route>
+              {/* Role-gated groups are added by Task 7 */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
