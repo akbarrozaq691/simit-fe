@@ -17,6 +17,11 @@ import { EditorialDashboard } from '@/pages/editorial/EditorialDashboard'
 import { ArticleManage } from '@/pages/editorial/ArticleManage'
 import { Journals } from '@/pages/editorial/Journals'
 import { TimelineAdmin } from '@/pages/editorial/TimelineAdmin'
+import { Users } from '@/pages/admin/Users'
+import { Topics } from '@/pages/admin/Topics'
+import { Occupations } from '@/pages/admin/Occupations'
+import { AuditLog } from '@/pages/admin/AuditLog'
+import { ArchivedArticles } from '@/pages/admin/ArchivedArticles'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -47,7 +52,13 @@ export default function App() {
                 <Route path="/editorial/timeline" element={<TimelineAdmin />} />
                 <Route path="/editorial/:id" element={<ArticleManage />} />
               </Route>
-              {/* Role-gated groups are added by Task 7 */}
+              <Route element={<RequireRole roles={['admin']} />}>
+                <Route path="/admin/users" element={<Users />} />
+                <Route path="/admin/topics" element={<Topics />} />
+                <Route path="/admin/occupations" element={<Occupations />} />
+                <Route path="/admin/audit" element={<AuditLog />} />
+                <Route path="/admin/archive" element={<ArchivedArticles />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

@@ -1,12 +1,14 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '@/api/endpoints'
 import { ApiError } from '@/api/client'
+import { useAuth } from '@/auth/AuthContext'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { Spinner } from '@/components/ui/Spinner'
@@ -29,7 +31,9 @@ const DECISION_LABEL: Record<Review['decision'], string> = {
 
 export function ArticleManage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   // Assign-reviewers panel state
   const [selectedReviewers, setSelectedReviewers] = useState<string[]>([])
@@ -44,6 +48,11 @@ export function ArticleManage() {
   const [decisionJournal, setDecisionJournal] = useState('')
   const [decisionError, setDecisionError] = useState<string | null>(null)
   const [announcing, setAnnouncing] = useState(false)
+
+  // Archive panel state (admin only)
+  const [confirmArchive, setConfirmArchive] = useState(false)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
+  const [archiveBusy, setArchiveBusy] = useState(false)
 
   const articleQuery = useQuery({
     queryKey: ['article', id],
@@ -108,6 +117,37 @@ export function ArticleManage() {
       queryClient.invalidateQueries({ queryKey: ['reviews', id] }),
       queryClient.invalidateQueries({ queryKey: ['articles'] }),
     ])
+  }
+
+  async function handleArchive() {
+    setArchiveError(null)
+    setArchiveBusy(true)
+    try {
+      await api.deleteArticle(article.id_article)
+      setConfirmArchive(false)
+      await invalidateAll()
+      // Leave this page rather than stay on it: the API hides an archived
+      // article's versions and reviews (404), so remaining here would show a
+      // half-broken screen. The archive list is where it lives now.
+      navigate('/admin/archive')
+    } catch (err) {
+      setArchiveError(err instanceof ApiError ? err.message : 'Could not archive this submission.')
+    } finally {
+      setArchiveBusy(false)
+    }
+  }
+
+  async function handleRestore() {
+    setArchiveError(null)
+    setArchiveBusy(true)
+    try {
+      await api.restoreArticle(article.id_article)
+      await invalidateAll()
+    } catch (err) {
+      setArchiveError(err instanceof ApiError ? err.message : 'Could not restore this submission.')
+    } finally {
+      setArchiveBusy(false)
+    }
   }
 
   async function handleAssign() {
@@ -363,6 +403,62 @@ export function ArticleManage() {
           </>
         )}
       </Card>
+
+      {user?.role === 'admin' && (
+        <Card className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold text-plum-600">Archive</h2>
+          {archiveError && <ErrorState message={archiveError} />}
+          {article.deleted_at ? (
+            <>
+              <p className="text-sm text-ink-600">
+                This submission is archived. Restoring it returns it to the pipeline exactly where it
+                left off — versions, reviews and reviewer assignments were all kept.
+              </p>
+              <Button
+                variant="secondary"
+                loading={archiveBusy}
+                onClick={handleRestore}
+                className="self-start"
+              >
+                Restore submission
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-ink-600">
+                Archiving hides the submission from the pipeline and blocks further review, but keeps
+                its full history. It can be restored later.
+              </p>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setArchiveError(null)
+                  setConfirmArchive(true)
+                }}
+                className="self-start"
+              >
+                Archive submission
+              </Button>
+            </>
+          )}
+        </Card>
+      )}
+
+      <Modal open={confirmArchive} onClose={() => setConfirmArchive(false)} title="Archive submission">
+        <p className="text-sm text-ink-600">
+          Archive <span className="font-semibold text-ink-900">{article.title}</span>? It disappears
+          from the editorial list and no further reviews or decisions are possible until it is
+          restored. Nothing is deleted.
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setConfirmArchive(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" loading={archiveBusy} onClick={handleArchive}>
+            Archive
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }
