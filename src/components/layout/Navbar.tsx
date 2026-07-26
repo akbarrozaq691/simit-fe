@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
 import { useAuth } from '@/auth/AuthContext'
@@ -29,6 +30,13 @@ export function Navbar() {
   const navigate = useNavigate()
   const { user, isAuthenticated, logout } = useAuth()
   const items = NAV_BY_ROLE[user?.role ?? 'public'] ?? NAV_BY_ROLE.public
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  // A route change means a link was followed (or a redirect fired) — close
+  // the mobile panel so it doesn't linger over the new page.
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
 
   function handleSignOut() {
     logout()
@@ -63,7 +71,7 @@ export function Navbar() {
         <div className="ml-auto flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
-              <span className="text-sm font-medium text-ink-600">{user.user_name}</span>
+              <span className="hidden text-sm font-medium text-ink-600 sm:inline">{user.user_name}</span>
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -88,8 +96,55 @@ export function Navbar() {
               </Link>
             </>
           )}
+          <button
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
+            className="rounded-lg p-1.5 text-ink-600 hover:bg-ink-100 hover:text-ink-900 md:hidden"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              {menuOpen ? (
+                <path
+                  d="M6 6l12 12M18 6L6 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              ) : (
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              )}
+            </svg>
+          </button>
         </div>
       </nav>
+      {menuOpen && items.length > 0 && (
+        <div className="border-t border-ink-200 px-6 py-3 md:hidden">
+          <div className="flex flex-col gap-1">
+            {items.map((item) => {
+              const active = pathname === item.to || pathname.startsWith(item.to + '/')
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={
+                    active
+                      ? 'rounded-lg bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700'
+                      : 'rounded-lg px-3 py-2 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+                  }
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </header>
   )
 }
