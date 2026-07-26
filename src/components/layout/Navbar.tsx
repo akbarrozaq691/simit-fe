@@ -17,11 +17,15 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { to: '/editorial/journals', label: 'Journals' },
     { to: '/editorial/timeline', label: 'Timeline' },
   ],
+  // Admin reaches Journals and Timeline from the editorial dashboard's own
+  // buttons, so they stay out of the bar to keep it from overflowing.
   admin: [
     { to: '/editorial', label: 'Editorial' },
     { to: '/admin/users', label: 'Users' },
     { to: '/admin/topics', label: 'Topics' },
+    { to: '/admin/occupations', label: 'Occupations' },
     { to: '/admin/audit', label: 'Audit Log' },
+    { to: '/admin/archive', label: 'Archive' },
   ],
 }
 
