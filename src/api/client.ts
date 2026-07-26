@@ -42,7 +42,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${BASE}${path}`, { ...init, headers })
 
-  if (res.status === 401) {
+  if (res.status === 204) return undefined as T
+
+  const body = await res.json().catch(() => null)
+
+  // The login endpoint's own 401 ("invalid email or password") is a normal
+  // request failure, not a session expiring — it must reach the caller with
+  // the backend's real message, not be swallowed into the expiry flow below.
+  if (res.status === 401 && path !== '/auth/login') {
     // The backend revokes archived users mid-session, so any request can
     // start failing. Drop the session rather than sitting half-authenticated.
     clearAuth()
@@ -52,9 +59,6 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new ApiError(401, 'Your session has ended. Please sign in again.')
   }
 
-  if (res.status === 204) return undefined as T
-
-  const body = await res.json().catch(() => null)
   if (!res.ok) throw new ApiError(res.status, messageFrom(res.status, body), body)
   return body as T
 }
