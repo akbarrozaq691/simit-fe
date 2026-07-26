@@ -71,26 +71,31 @@ export function Navbar() {
         <div className="ml-auto flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
-              <span className="hidden text-sm font-medium text-ink-600 sm:inline">{user.user_name}</span>
+              <span className="hidden whitespace-nowrap text-sm font-medium text-ink-600 md:inline">
+                {user.user_name}
+              </span>
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+                className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
               >
                 Sign out
               </button>
             </>
           ) : (
             <>
+              {/* Below md there isn't room for both actions without wrapping —
+                  "Sign in" moves into the mobile panel and Register, the
+                  primary CTA, stays one tap away in the bar. */}
               <Link
                 to="/login"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+                className="hidden whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900 md:inline-flex"
               >
                 Sign in
               </Link>
               <Link
                 to="/register"
-                className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
+                className="whitespace-nowrap rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
               >
                 Register
               </Link>
@@ -123,9 +128,12 @@ export function Navbar() {
           </button>
         </div>
       </nav>
-      {menuOpen && items.length > 0 && (
+      {menuOpen && (
         <div className="border-t border-ink-200 px-6 py-3 md:hidden">
           <div className="flex flex-col gap-1">
+            {isAuthenticated && user && (
+              <span className="px-3 py-2 text-sm font-medium text-ink-600">{user.user_name}</span>
+            )}
             {items.map((item) => {
               const active = pathname === item.to || pathname.startsWith(item.to + '/')
               return (
@@ -142,6 +150,14 @@ export function Navbar() {
                 </Link>
               )
             })}
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       )}
