@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${FE_PORT:-3000}:80"
+    environment:
+      # The backend runs from its own compose project in ../be, so reach it
+      # through the host. On Linux, see README for the host-gateway flag.
+      API_UPSTREAM: ${API_UPSTREAM:-host.docker.internal:8888}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
