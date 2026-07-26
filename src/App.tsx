@@ -11,6 +11,8 @@ import { NotFound } from '@/pages/NotFound'
 import { Dashboard } from '@/pages/author/Dashboard'
 import { SubmitAbstract } from '@/pages/author/SubmitAbstract'
 import { ArticleDetail } from '@/pages/author/ArticleDetail'
+import { ReviewQueue } from '@/pages/reviewer/ReviewQueue'
+import { ReviewDetail } from '@/pages/reviewer/ReviewDetail'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -31,7 +33,11 @@ export default function App() {
                 <Route path="/submit" element={<SubmitAbstract />} />
                 <Route path="/articles/:id" element={<ArticleDetail />} />
               </Route>
-              {/* Role-gated groups are added by Tasks 5-7 */}
+              <Route element={<RequireRole roles={['SC']} />}>
+                <Route path="/review" element={<ReviewQueue />} />
+                <Route path="/review/:id" element={<ReviewDetail />} />
+              </Route>
+              {/* Role-gated groups are added by Tasks 6-7 */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
