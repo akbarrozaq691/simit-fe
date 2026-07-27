@@ -1,7 +1,8 @@
 import { http } from './client'
 import type {
-  Article, ArticleVersion, AuditEntry, Journal, Occupation, RegisterAs, Review,
-  TimelineItem, TokenResponse, Topic, UploadResponse, User,
+  Article, ArticleVersion, AuditEntry, FaqItem, GalleryImage, Journal, LandingContent,
+  Occupation, RegisterAs, Review, ScheduleItem, TimelineItem, TokenResponse, Topic,
+  UploadResponse, User,
 } from './types'
 
 export const api = {
@@ -96,6 +97,27 @@ export const api = {
   updateTimeline: (id: string, body: Record<string, unknown>) =>
     http.patch<TimelineItem>(`/timeline/${id}`, body),
   deleteTimeline: (id: string) => http.del<void>(`/timeline/${id}`),
+
+  // landing page content
+  getLanding: () => http.get<LandingContent>('/landing'),
+  saveContent: (values: Record<string, string>) =>
+    http.put<Record<string, string>>('/admin/content', { values }),
+
+  createSchedule: (body: { title: string; description?: string | null; date_text?: string | null; sort_order?: number }) =>
+    http.post<ScheduleItem>('/admin/content/schedule', body),
+  updateSchedule: (id: string, body: { title: string; description?: string | null; date_text?: string | null; sort_order?: number }) =>
+    http.patch<ScheduleItem>(`/admin/content/schedule/${id}`, body),
+  deleteSchedule: (id: string) => http.del<void>(`/admin/content/schedule/${id}`),
+
+  createFaq: (body: { question: string; answer: string; sort_order?: number }) =>
+    http.post<FaqItem>('/admin/content/faq', body),
+  updateFaq: (id: string, body: { question: string; answer: string; sort_order?: number }) =>
+    http.patch<FaqItem>(`/admin/content/faq/${id}`, body),
+  deleteFaq: (id: string) => http.del<void>(`/admin/content/faq/${id}`),
+
+  createGalleryImage: (body: { file_path: string; caption?: string | null; sort_order?: number }) =>
+    http.post<GalleryImage>('/admin/content/gallery', body),
+  deleteGalleryImage: (id: string) => http.del<void>(`/admin/content/gallery/${id}`),
 
   // audit
   listAudit: (params: {

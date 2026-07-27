@@ -6,7 +6,15 @@ import { useAuth } from '@/auth/AuthContext'
 type NavItem = { to: string; label: string }
 
 export const NAV_BY_ROLE: Record<string, NavItem[]> = {
-  public: [{ to: '/', label: 'Home' }],
+  // Anchors into the landing page's sections, matching the approved design.
+  public: [
+    { to: '/', label: 'Home' },
+    { to: '/#about', label: 'About' },
+    { to: '/#schedule', label: 'Schedule' },
+    { to: '/#sub-theme', label: 'Sub Theme' },
+    { to: '/#venue', label: 'Venue' },
+    { to: '/#faq', label: 'FAQ' },
+  ],
   author: [
     { to: '/dashboard', label: 'My Submissions' },
     { to: '/submit', label: 'Submit Abstract' },

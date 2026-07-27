@@ -85,6 +85,8 @@ export interface SubTopic {
 export interface Topic {
   id_topic: string
   topic_name: string
+  description: string | null
+  sort_order: number
   stem: SubTopic[]
   humanity: SubTopic[]
   interdisciplinary: SubTopic[]
@@ -129,4 +131,40 @@ export interface TokenResponse {
 
 export interface UploadResponse {
   file_path: string
+}
+
+// ---- Landing page content (CMS) ----
+
+export interface ScheduleItem {
+  id_schedule: string
+  title: string
+  description: string | null
+  /** Free text, not a date — organisers write ranges like "15 - 30 Juli 2026". */
+  date_text: string | null
+  sort_order: number
+}
+
+export interface FaqItem {
+  id_faq: string
+  question: string
+  answer: string
+  sort_order: number
+}
+
+export interface GalleryImage {
+  id_image: string
+  file_path: string
+  caption: string | null
+  sort_order: number
+}
+
+/** Everything the landing page renders, fetched in one request. */
+export interface LandingContent {
+  /** Single-value text, keyed as seeded in db/schema.sql (hero_title, …). */
+  content: Record<string, string>
+  schedule: ScheduleItem[]
+  faq: FaqItem[]
+  gallery: GalleryImage[]
+  topics: Topic[]
+  journals: Journal[]
 }

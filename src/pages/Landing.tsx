@@ -1,217 +1,353 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/api/endpoints'
-import type { SubTopic } from '@/api/types'
+import { ApiError } from '@/api/client'
 import { useAuth } from '@/auth/AuthContext'
-import { Card } from '@/components/ui/Card'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { ErrorState } from '@/components/ui/ErrorState'
-import { Logo } from '@/components/Logo'
 import { Spinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
+import type { FaqItem, GalleryImage, ScheduleItem, Topic } from '@/api/types'
 
-const SUBTOPIC_GROUPS: { key: 'stem' | 'humanity' | 'interdisciplinary'; label: string }[] = [
-  { key: 'stem', label: 'STEM' },
-  { key: 'humanity', label: 'Humanities' },
-  { key: 'interdisciplinary', label: 'Interdisciplinary' },
-]
+/** Reads a CMS key, falling back to '' so a section renders empty rather than
+ *  printing "undefined" when an admin hasn't filled it in yet. */
+function text(content: Record<string, string>, key: string): string {
+  return content[key] ?? ''
+}
 
-function formatDateRange(start: string, end: string): string {
-  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
-  const startLabel = fmt(start)
-  const endLabel = fmt(end)
-  return startLabel === endLabel ? startLabel : `${startLabel} – ${endLabel}`
+function Section({
+  id,
+  tinted = false,
+  children,
+}: {
+  id?: string
+  tinted?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <section
+      id={id}
+      className={
+        tinted
+          ? 'bg-gradient-to-br from-brand-50 via-plum-50 to-brand-100/60 px-6 py-20'
+          : 'bg-white px-6 py-20'
+      }
+    >
+      <div className="mx-auto max-w-6xl">{children}</div>
+    </section>
+  )
+}
+
+function SectionHeading({ title, subtitle }: { title: string; subtitle?: string }) {
+  if (!title && !subtitle) return null
+  return (
+    <div className="mb-12 text-center">
+      {title && <h2 className="text-3xl font-bold text-plum-600">{title}</h2>}
+      {subtitle && <p className="mt-2 text-sm text-ink-600">{subtitle}</p>}
+    </div>
+  )
+}
+
+function Hero({ content }: { content: Record<string, string> }) {
+  const { isAuthenticated } = useAuth()
+  const image = text(content, 'hero_image_path')
+
+  return (
+    <section id="home" className="relative overflow-hidden">
+      {/* Falls back to a plum gradient when no hero image is set — storage may
+          not be configured yet, and a broken <img> looks worse than a
+          deliberate background. */}
+      {image ? (
+        <>
+          <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-plum-700/60" />
+        </>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-plum-600 via-plum-700 to-brand-700" />
+      )}
+
+      <div className="relative mx-auto max-w-4xl px-6 py-28 text-center">
+        <h1 className="font-serif text-4xl leading-tight text-white sm:text-5xl">
+          {text(content, 'hero_title')}
+        </h1>
+        {text(content, 'hero_tagline') && (
+          <p className="mx-auto mt-5 max-w-2xl text-base text-brand-100">
+            {text(content, 'hero_tagline')}
+          </p>
+        )}
+
+        {(text(content, 'hero_location') || text(content, 'hero_date')) && (
+          <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold tracking-wide text-white ring-1 ring-white/25">
+            <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+              <path d="M6 2a1 1 0 0 1 1 1v1h6V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1Zm10 6H4v8h12V8Z" />
+            </svg>
+            {[text(content, 'hero_location'), text(content, 'hero_date')]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        )}
+
+        <div className="mt-9">
+          <Link
+            to={isAuthenticated ? '/dashboard' : '/register'}
+            className="inline-flex items-center rounded-lg bg-plum-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-plum-600"
+          >
+            {text(content, 'hero_cta_label') || 'Explore Event'}
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function About({
+  content,
+  gallery,
+}: {
+  content: Record<string, string>
+  gallery: GalleryImage[]
+}) {
+  // The CMS stores paragraphs separated by blank lines, so admins edit plain
+  // text rather than markup.
+  const paragraphs = text(content, 'about_body')
+    .split(/\n\s*\n/)
+    .filter(Boolean)
+
+  return (
+    <Section id="about" tinted>
+      <div className="grid items-center gap-12 md:grid-cols-2">
+        <div>
+          {gallery.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {gallery.slice(0, 4).map((image, index) => (
+                <img
+                  key={image.id_image}
+                  src={image.file_path}
+                  alt={image.caption ?? ''}
+                  className={`h-40 w-full rounded-lg object-cover shadow-sm ${
+                    index % 3 === 0 ? 'md:translate-y-3' : ''
+                  }`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-plum-300/60 bg-white/50 px-6 text-center text-sm text-ink-600">
+              Photos will appear here once they are uploaded.
+            </div>
+          )}
+        </div>
+
+        <div className="text-center md:text-left">
+          <h2 className="text-2xl font-bold text-plum-600">{text(content, 'about_heading')}</h2>
+          <div className="mt-4 space-y-4 text-sm leading-relaxed text-ink-800">
+            {paragraphs.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+function Schedule({
+  content,
+  schedule,
+}: {
+  content: Record<string, string>
+  schedule: ScheduleItem[]
+}) {
+  return (
+    <Section id="schedule">
+      <SectionHeading
+        title={text(content, 'schedule_heading')}
+        subtitle={text(content, 'schedule_subtitle')}
+      />
+
+      {schedule.length === 0 ? (
+        <p className="text-center text-sm text-ink-600">The schedule will be published soon.</p>
+      ) : (
+        <ol className="relative mx-auto max-w-3xl space-y-4 border-l-2 border-brand-100 pl-8">
+          {schedule.map((item) => (
+            <li key={item.id_schedule} className="relative">
+              <span className="absolute -left-[41px] top-6 h-3 w-3 rounded-full bg-brand-500 ring-4 ring-white" />
+              <div className="flex flex-wrap items-start gap-4 rounded-xl border border-brand-100 bg-white p-5 shadow-sm">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-plum-500 text-white">
+                  <svg viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+                    <path d="M5 2h7l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm2 6h6v1.5H7V8Zm0 4h6v1.5H7V12Z" />
+                  </svg>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-plum-600">{item.title}</h3>
+                  {item.description && (
+                    <p className="mt-1 text-sm text-ink-600">{item.description}</p>
+                  )}
+                </div>
+                {item.date_text && (
+                  <span className="rounded-md bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-700">
+                    {item.date_text}
+                  </span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Section>
+  )
+}
+
+function SubThemes({ content, topics }: { content: Record<string, string>; topics: Topic[] }) {
+  const { isAuthenticated } = useAuth()
+
+  return (
+    <Section id="sub-theme" tinted>
+      <SectionHeading
+        title={text(content, 'subtheme_heading')}
+        subtitle={text(content, 'subtheme_subtitle')}
+      />
+
+      {topics.length === 0 ? (
+        <p className="text-center text-sm text-ink-600">Sub themes will be announced soon.</p>
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {topics.map((topic) => (
+            <div
+              key={topic.id_topic}
+              className="flex flex-col rounded-xl border border-brand-100 bg-white p-5 text-center shadow-sm"
+            >
+              <h3 className="font-bold text-plum-600">{topic.topic_name}</h3>
+              {topic.description && (
+                <p className="mt-2 flex-1 text-sm text-ink-600">{topic.description}</p>
+              )}
+              <Link
+                to={isAuthenticated ? '/submit' : '/register'}
+                className="mt-4 rounded-lg bg-plum-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-plum-600"
+              >
+                {isAuthenticated ? 'Submit Abstract' : 'Register Now'}
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function Venue({ content }: { content: Record<string, string> }) {
+  const rows = [
+    { label: 'Address', value: text(content, 'venue_address') },
+    { label: 'Main Venue', value: text(content, 'venue_main') },
+    { label: 'Nearest Metro', value: text(content, 'venue_metro') },
+  ].filter((row) => row.value)
+
+  const body = text(content, 'venue_body')
+  const heading = text(content, 'venue_heading')
+  // Hide the section entirely rather than showing a lone heading over nothing.
+  if (!heading && !body && rows.length === 0) return null
+
+  return (
+    <Section id="venue" tinted>
+      <h2 className="text-2xl font-bold text-plum-600">{heading}</h2>
+      {body && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-700">{body}</p>}
+      {rows.length > 0 && (
+        <dl className="mt-8 space-y-4">
+          {rows.map((row) => (
+            <div key={row.label}>
+              <dt className="text-sm font-semibold text-plum-600">{row.label}</dt>
+              <dd className="text-sm text-ink-700">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </Section>
+  )
+}
+
+function Faq({ content, faq }: { content: Record<string, string>; faq: FaqItem[] }) {
+  const [openId, setOpenId] = useState<string | null>(null)
+
+  return (
+    <Section id="faq">
+      <SectionHeading
+        title={text(content, 'faq_heading')}
+        subtitle={text(content, 'faq_subtitle')}
+      />
+
+      {faq.length === 0 ? (
+        <p className="text-center text-sm text-ink-600">
+          Questions and answers will be posted closer to the event.
+        </p>
+      ) : (
+        <div className="mx-auto max-w-3xl divide-y divide-ink-200 overflow-hidden rounded-xl border border-ink-200">
+          {faq.map((item) => {
+            const open = openId === item.id_faq
+            return (
+              <div key={item.id_faq}>
+                <button
+                  type="button"
+                  onClick={() => setOpenId(open ? null : item.id_faq)}
+                  aria-expanded={open}
+                  className="flex w-full items-center justify-between gap-4 bg-white px-5 py-4 text-left text-sm font-semibold text-ink-900 hover:bg-ink-50"
+                >
+                  {item.question}
+                  <span
+                    aria-hidden="true"
+                    className={`shrink-0 text-lg text-plum-500 transition ${open ? 'rotate-45' : ''}`}
+                  >
+                    +
+                  </span>
+                </button>
+                {open && (
+                  <p className="whitespace-pre-line bg-ink-50 px-5 pb-5 pt-1 text-sm text-ink-700">
+                    {item.answer}
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </Section>
+  )
 }
 
 export function Landing() {
-  const { isAuthenticated, user } = useAuth()
-  const abstractCta = isAuthenticated && user?.role === 'author' ? '/submit' : '/register'
+  const landing = useQuery({ queryKey: ['landing'], queryFn: api.getLanding })
 
-  const timeline = useQuery({ queryKey: ['timeline'], queryFn: api.listTimeline })
-  const topics = useQuery({ queryKey: ['topics'], queryFn: api.listTopics })
-  const journals = useQuery({ queryKey: ['journals'], queryFn: api.listJournals })
+  if (landing.isLoading) {
+    return (
+      <div className="flex justify-center py-28">
+        <Spinner className="h-7 w-7 text-plum-500" />
+      </div>
+    )
+  }
+
+  if (landing.isError || !landing.data) {
+    return (
+      <div className="mx-auto max-w-xl px-6 py-24">
+        <ErrorState
+          title="Couldn't load the page"
+          message={
+            landing.error instanceof ApiError
+              ? landing.error.message
+              : 'The site content is unavailable right now.'
+          }
+          onRetry={() => landing.refetch()}
+        />
+      </div>
+    )
+  }
+
+  const { content, schedule, faq, gallery, topics } = landing.data
 
   return (
-    <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-plum-600 to-plum-700 text-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-6 py-24 text-center">
-          <Logo className="h-14 w-14" />
-          <span className="text-sm font-semibold uppercase tracking-[0.3em] text-plum-100">SIMIT</span>
-          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-            4th International Student Symposium in Türkiye
-          </h1>
-          <p className="max-w-2xl text-plum-100">
-            Present your research to an international audience of students and reviewers. Submit an abstract,
-            pass peer review, and publish your full paper with one of our partner journals.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Link
-              to={abstractCta}
-              className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
-            >
-              Submit your abstract
-            </Link>
-            <Link
-              to="/login"
-              className="rounded-lg bg-white/10 px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/20"
-            >
-              Sign in
-            </Link>
-          </div>
-          <p className="pt-4 text-xs font-medium uppercase tracking-wide text-plum-100">
-            Target: 65 presenters
-          </p>
-        </div>
-      </section>
-
-      {/* About */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-center text-2xl font-bold text-plum-600">How it works</h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-3">
-          <Card>
-            <p className="text-sm font-semibold text-brand-600">Step 1</p>
-            <h3 className="mt-1 text-lg font-bold text-ink-900">Submit your abstract</h3>
-            <p className="mt-2 text-sm text-ink-600">
-              Register as an author and submit your abstract, choosing the topic that fits your research.
-            </p>
-          </Card>
-          <Card>
-            <p className="text-sm font-semibold text-brand-600">Step 2</p>
-            <h3 className="mt-1 text-lg font-bold text-ink-900">Peer review</h3>
-            <p className="mt-2 text-sm text-ink-600">
-              Reviewers assess your abstract, then your full paper, giving feedback along the way.
-            </p>
-          </Card>
-          <Card>
-            <p className="text-sm font-semibold text-brand-600">Step 3</p>
-            <h3 className="mt-1 text-lg font-bold text-ink-900">Publication</h3>
-            <p className="mt-2 text-sm text-ink-600">
-              Accepted full papers are recommended for publication in one of our partner journals.
-            </p>
-          </Card>
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-3xl px-6">
-          <h2 className="text-center text-2xl font-bold text-plum-600">Timeline</h2>
-          <div className="mt-8">
-            {timeline.isLoading && (
-              <div className="flex justify-center py-8 text-ink-600">
-                <Spinner className="h-6 w-6" />
-              </div>
-            )}
-            {timeline.isError && (
-              <ErrorState message="Couldn't load the timeline." onRetry={() => timeline.refetch()} />
-            )}
-            {timeline.isSuccess && timeline.data.length === 0 && (
-              <EmptyState title="No dates yet" description="The schedule will be published soon." />
-            )}
-            {timeline.isSuccess && timeline.data.length > 0 && (
-              <ol className="relative border-l-2 border-plum-100 pl-6">
-                {timeline.data.map((item) => (
-                  <li key={item.id_timeline} className="mb-8 last:mb-0">
-                    <span className="absolute -left-[7px] mt-1.5 h-3 w-3 rounded-full bg-brand-500" />
-                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-                      {formatDateRange(item.start_date, item.end_date)}
-                    </p>
-                    <h3 className="mt-1 font-bold text-ink-900">{item.title}</h3>
-                    {item.description && <p className="mt-1 text-sm text-ink-600">{item.description}</p>}
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Topics */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-center text-2xl font-bold text-plum-600">Topics</h2>
-        <div className="mt-8">
-          {topics.isLoading && (
-            <div className="flex justify-center py-8 text-ink-600">
-              <Spinner className="h-6 w-6" />
-            </div>
-          )}
-          {topics.isError && <ErrorState message="Couldn't load topics." onRetry={() => topics.refetch()} />}
-          {topics.isSuccess && topics.data.length === 0 && (
-            <EmptyState title="No topics yet" description="Topics will be announced soon." />
-          )}
-          {topics.isSuccess && topics.data.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {topics.data.map((topic) => {
-                const groups = SUBTOPIC_GROUPS.map((g) => ({ ...g, items: topic[g.key] as SubTopic[] })).filter(
-                  (g) => g.items.length > 0,
-                )
-                return (
-                  <Card key={topic.id_topic}>
-                    <h3 className="font-bold text-ink-900">{topic.topic_name}</h3>
-                    {groups.length === 0 ? (
-                      <p className="mt-2 text-sm text-ink-600">No subtopics yet.</p>
-                    ) : (
-                      <div className="mt-3 flex flex-col gap-2">
-                        {groups.map((g) => (
-                          <div key={g.key}>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-plum-600">{g.label}</p>
-                            <p className="mt-0.5 text-sm text-ink-600">{g.items.map((s) => s.name).join(', ')}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </Card>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Journals */}
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-2xl font-bold text-plum-600">Output journals</h2>
-          <p className="mt-2 text-sm text-ink-600">Accepted full papers are recommended for publication in:</p>
-          <div className="mt-6">
-            {journals.isLoading && (
-              <div className="flex justify-center py-4 text-ink-600">
-                <Spinner className="h-6 w-6" />
-              </div>
-            )}
-            {journals.isError && (
-              <ErrorState message="Couldn't load journals." onRetry={() => journals.refetch()} />
-            )}
-            {journals.isSuccess && journals.data.length === 0 && (
-              <EmptyState title="No journals listed yet" />
-            )}
-            {journals.isSuccess && journals.data.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-2">
-                {journals.data.map((journal) => (
-                  <span
-                    key={journal.id_journal}
-                    className="rounded-full bg-plum-50 px-4 py-1.5 text-sm font-semibold text-plum-700 ring-1 ring-plum-100"
-                  >
-                    {journal.journal_name}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="mx-auto max-w-3xl px-6 py-16 text-center">
-        <h2 className="text-2xl font-bold text-plum-600">Ready to present at SIMIT?</h2>
-        <p className="mt-2 text-sm text-ink-600">Registration is open — submit your abstract to get started.</p>
-        <Link
-          to={abstractCta}
-          className="mt-6 inline-block rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
-        >
-          Submit your abstract
-        </Link>
-      </section>
-    </div>
+    <>
+      <Hero content={content} />
+      <About content={content} gallery={gallery} />
+      <Schedule content={content} schedule={schedule} />
+      <SubThemes content={content} topics={topics} />
+      <Venue content={content} />
+      <Faq content={content} faq={faq} />
+    </>
   )
 }
