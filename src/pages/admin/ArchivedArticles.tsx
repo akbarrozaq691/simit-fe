@@ -79,8 +79,42 @@ export function ArchivedArticles() {
           />
         )}
 
+        {/* Restore sits in the last column, off-screen on a phone behind a
+            sideways scroll nobody finds. Cards below sm keep it reachable. */}
         {!query.isLoading && !query.isError && archived.length > 0 && (
-          <Table>
+          <ul className="flex flex-col gap-3 sm:hidden">
+            {archived.map((a) => (
+              <li key={a.id_article} className="rounded-xl bg-white p-4 ring-1 ring-ink-200">
+                <Link
+                  to={`/editorial/${a.id_article}`}
+                  className="font-semibold text-ink-900 hover:text-brand-600 hover:underline"
+                >
+                  {a.title}
+                </Link>
+                <p className="mt-1 text-sm text-ink-700">{a.authors}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge tone={statusTone(a.status)}>{statusLabel(a.status)}</Badge>
+                  <span className="text-xs text-ink-500">
+                    Archived {a.deleted_at ? formatDate(a.deleted_at) : '—'}
+                  </span>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="mt-3"
+                  loading={restoringId === a.id_article}
+                  onClick={() => handleRestore(a.id_article)}
+                >
+                  Restore
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!query.isLoading && !query.isError && archived.length > 0 && (
+          <div className="hidden sm:block">
+            <Table>
             <THead>
               <TR>
                 <TH>Title</TH>
@@ -118,7 +152,8 @@ export function ArchivedArticles() {
                 </TR>
               ))}
             </TBody>
-          </Table>
+            </Table>
+          </div>
         )}
       </div>
     </div>

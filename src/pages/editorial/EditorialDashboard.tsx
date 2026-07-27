@@ -103,38 +103,75 @@ export function EditorialDashboard() {
       )}
 
       {!isLoading && !isError && filtered.length > 0 && (
-        <Table>
-          <THead>
-            <TR>
-              <TH>Title</TH>
-              <TH>Authors</TH>
-              <TH>Status</TH>
-              <TH>Reviewers</TH>
-              <TH>Updated</TH>
-              <TH />
-            </TR>
-          </THead>
-          <TBody>
+        <>
+          {/* A six-column table leaves the Manage link off-screen on a phone,
+              behind a sideways scroll nobody discovers. One card per submission
+              below sm. */}
+          <ul className="flex flex-col gap-3 sm:hidden">
             {filtered.map((article) => (
-              <TR key={article.id_article}>
-                <TD className="max-w-xs truncate font-medium text-ink-900" title={article.title}>
-                  {article.title}
-                </TD>
-                <TD>{authorCount(article.authors)}</TD>
-                <TD>
+              <li key={article.id_article} className="rounded-xl bg-white p-4 ring-1 ring-ink-200">
+                <p className="font-semibold text-ink-900">{article.title}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Badge tone={statusTone(article.status)}>{statusLabel(article.status)}</Badge>
-                </TD>
-                <TD>{article.reviewers.length}</TD>
-                <TD>{new Date(article.updated_at).toLocaleDateString()}</TD>
-                <TD>
-                  <Link to={`/editorial/${article.id_article}`} className="font-semibold text-brand-600 hover:underline">
+                  <span className="text-xs text-ink-600">
+                    {authorCount(article.authors)} author{authorCount(article.authors) === 1 ? '' : 's'}
+                    {' · '}
+                    {article.reviewers.length} reviewer{article.reviewers.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-ink-500">
+                    Updated {new Date(article.updated_at).toLocaleDateString()}
+                  </span>
+                  <Link
+                    to={`/editorial/${article.id_article}`}
+                    className="font-semibold text-brand-600 hover:underline"
+                  >
                     Manage
                   </Link>
-                </TD>
-              </TR>
+                </div>
+              </li>
             ))}
-          </TBody>
-        </Table>
+          </ul>
+
+          <div className="hidden sm:block">
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Title</TH>
+                  <TH>Authors</TH>
+                  <TH>Status</TH>
+                  <TH>Reviewers</TH>
+                  <TH>Updated</TH>
+                  <TH />
+                </TR>
+              </THead>
+              <TBody>
+                {filtered.map((article) => (
+                  <TR key={article.id_article}>
+                    <TD className="max-w-xs truncate font-medium text-ink-900" title={article.title}>
+                      {article.title}
+                    </TD>
+                    <TD>{authorCount(article.authors)}</TD>
+                    <TD>
+                      <Badge tone={statusTone(article.status)}>{statusLabel(article.status)}</Badge>
+                    </TD>
+                    <TD>{article.reviewers.length}</TD>
+                    <TD>{new Date(article.updated_at).toLocaleDateString()}</TD>
+                    <TD>
+                      <Link
+                        to={`/editorial/${article.id_article}`}
+                        className="font-semibold text-brand-600 hover:underline"
+                      >
+                        Manage
+                      </Link>
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   )

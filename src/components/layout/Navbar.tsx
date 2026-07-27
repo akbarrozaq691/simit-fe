@@ -12,6 +12,7 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { to: '/#about', label: 'About' },
     { to: '/#schedule', label: 'Schedule' },
     { to: '/#sub-theme', label: 'Sub Theme' },
+    { to: '/#output', label: 'Output' },
     { to: '/#venue', label: 'Venue' },
     { to: '/#faq', label: 'FAQ' },
   ],

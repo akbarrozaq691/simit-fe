@@ -7,7 +7,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { Spinner } from '@/components/ui/Spinner'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { mapEmbedUrl } from '@/lib/venueMap'
-import type { FaqItem, GalleryImage, LandingTopic, ScheduleItem } from '@/api/types'
+import type { FaqItem, GalleryImage, Journal, LandingTopic, ScheduleItem } from '@/api/types'
 
 /** Reads a CMS key, falling back to '' so a section renders empty rather than
  *  printing "undefined" when an admin hasn't filled it in yet. */
@@ -256,6 +256,56 @@ function SubThemes({
   )
 }
 
+function Output({
+  content,
+  journals,
+}: {
+  content: Record<string, string>
+  journals: Journal[]
+}) {
+  const heading = text(content, 'output_heading')
+  const note = text(content, 'output_note')
+  // Hidden entirely when there is nothing to say: an "Output" heading over an
+  // empty list reads as a broken page rather than a pending announcement.
+  if (!heading && journals.length === 0) return null
+
+  return (
+    <Section id="output">
+      <SectionHeading title={heading} subtitle={text(content, 'output_subtitle')} />
+
+      {journals.length === 0 ? (
+        <p className="text-center text-sm text-ink-600">
+          The publication venues will be announced soon.
+        </p>
+      ) : (
+        <ul className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* The same list an editor picks from when accepting a paper, so the
+              page cannot drift from what authors are actually recommended to. */}
+          {journals.map((journal) => (
+            <li
+              key={journal.id_journal}
+              className="flex items-center gap-3 rounded-xl border border-brand-100 bg-white p-4 shadow-sm"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-plum-500 text-white">
+                <svg viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+                  <path d="M4 3h9l3 3v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm2 5h8v1.5H6V8Zm0 3.5h8V13H6v-1.5Z" />
+                </svg>
+              </span>
+              <span className="font-semibold text-plum-600">{journal.journal_name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {note && (
+        <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-ink-700">
+          {note}
+        </p>
+      )}
+    </Section>
+  )
+}
+
 function Venue({ content }: { content: Record<string, string> }) {
   const rows = [
     { label: 'Address', value: text(content, 'venue_address') },
@@ -384,7 +434,7 @@ export function Landing() {
     )
   }
 
-  const { content, schedule, faq, gallery, topics } = landing.data
+  const { content, schedule, faq, gallery, topics, journals } = landing.data
 
   return (
     <>
@@ -392,6 +442,7 @@ export function Landing() {
       <About content={content} gallery={gallery} />
       <Schedule content={content} schedule={schedule} />
       <SubThemes content={content} topics={topics} />
+      <Output content={content} journals={journals} />
       <Venue content={content} />
       <Faq content={content} faq={faq} />
     </>

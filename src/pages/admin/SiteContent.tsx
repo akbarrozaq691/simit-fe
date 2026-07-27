@@ -55,7 +55,7 @@ export function SiteContent() {
     )
   }
 
-  const { content, schedule, faq, gallery, topics } = query.data
+  const { content, schedule, faq, gallery, topics, journals } = query.data
   const section = CONTENT_SECTIONS.find((s) => s.id === activeId) ?? CONTENT_SECTIONS[0]
 
   return (
@@ -101,6 +101,21 @@ export function SiteContent() {
         {section.id === 'about' && <GalleryEditor images={gallery} onChanged={refresh} />}
         {section.id === 'schedule' && <ScheduleEditor items={schedule} onChanged={refresh} />}
         {section.id === 'faq' && <FaqEditor items={faq} onChanged={refresh} />}
+        {section.id === 'output' && (
+          <Card>
+            <h3 className="font-semibold text-plum-600">Journals shown on the page</h3>
+            <p className="mt-1 text-sm text-ink-600">
+              The {journals.length} journal{journals.length === 1 ? '' : 's'} listed in this section
+              are the ones an editor picks from when accepting a paper, so they are edited there —
+              one list, never two that disagree.
+            </p>
+            <Link to="/editorial/journals" className="mt-4 inline-block">
+              <Button variant="secondary" size="sm">
+                Edit journals
+              </Button>
+            </Link>
+          </Card>
+        )}
         {section.id === 'subtheme' && (
           <Card>
             <h3 className="font-semibold text-plum-600">Sub theme cards</h3>

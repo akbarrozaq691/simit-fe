@@ -68,6 +68,22 @@ export const CONTENT_SECTIONS: ContentSection[] = [
     ],
   },
   {
+    id: 'output',
+    label: 'Output',
+    description:
+      'Where accepted papers are published. The journal list itself comes from Journals, which is what an editor picks from when accepting a paper.',
+    fields: [
+      { key: 'output_heading', label: 'Heading', kind: 'text' },
+      { key: 'output_subtitle', label: 'Subtitle', kind: 'text' },
+      {
+        key: 'output_note',
+        label: 'Note',
+        kind: 'textarea',
+        hint: 'Optional line under the list — indexing, proceedings, deadlines.',
+      },
+    ],
+  },
+  {
     id: 'venue',
     label: 'Venue',
     description: 'Where the symposium takes place. Empty rows are hidden on the page.',
