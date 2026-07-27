@@ -39,8 +39,24 @@ export const NAV_BY_ROLE: Record<string, NavItem[]> = {
   ],
 }
 
+/** Whether a nav item points at what is currently on screen.
+ *
+ *  The landing links are hash targets — `/#venue` — and `pathname` never
+ *  contains the hash, so comparing paths alone marked Home as active no matter
+ *  which section you picked. Hash items are matched on the hash; Home is only
+ *  active when there is no hash at all.
+ */
+function isActive(to: string, pathname: string, hash: string): boolean {
+  const [path, target] = to.split('#')
+  if (target !== undefined) {
+    return pathname === (path || '/') && hash === `#${target}`
+  }
+  if (to === '/') return pathname === '/' && hash === ''
+  return pathname === to || pathname.startsWith(to + '/')
+}
+
 export function Navbar() {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   const navigate = useNavigate()
   const { user, isAuthenticated, logout } = useAuth()
   const items = NAV_BY_ROLE[user?.role ?? 'public'] ?? NAV_BY_ROLE.public
@@ -50,7 +66,7 @@ export function Navbar() {
   // the mobile panel so it doesn't linger over the new page.
   useEffect(() => {
     setMenuOpen(false)
-  }, [pathname])
+  }, [pathname, hash])
 
   function handleSignOut() {
     logout()
@@ -69,7 +85,7 @@ export function Navbar() {
         </Link>
         <div className="hidden items-center gap-1 md:flex">
           {items.map((item) => {
-            const active = pathname === item.to || pathname.startsWith(item.to + '/')
+            const active = isActive(item.to, pathname, hash)
             return (
               <Link
                 key={item.to}
@@ -152,7 +168,7 @@ export function Navbar() {
               <span className="px-3 py-2 text-sm font-medium text-ink-600">{user.user_name}</span>
             )}
             {items.map((item) => {
-              const active = pathname === item.to || pathname.startsWith(item.to + '/')
+              const active = isActive(item.to, pathname, hash)
               return (
                 <Link
                   key={item.to}

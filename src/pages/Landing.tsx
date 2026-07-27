@@ -171,23 +171,32 @@ function Schedule({
           {schedule.map((item) => (
             <li key={item.id_schedule} className="relative">
               <span className="absolute -left-[41px] top-6 h-3 w-3 rounded-full bg-brand-500 ring-4 ring-white" />
-              <div className="flex flex-wrap items-start gap-4 rounded-xl border border-brand-100 bg-white p-5 shadow-sm">
+              {/* The date used to be a third flex child on the same row. On a
+                  phone it took 156 of 294px, and because the text column is
+                  `flex-1 min-w-0` that column shrank to ~24px instead of
+                  pushing the date onto its own line: the heading broke after
+                  five letters and the description wrapped one word per line.
+                  The date now sits inside the text column, beside the heading
+                  when there is room and under it when there is not. */}
+              <div className="flex items-start gap-4 rounded-xl border border-brand-100 bg-white p-5 shadow-sm">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-plum-500 text-white">
                   <svg viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor" aria-hidden="true">
                     <path d="M5 2h7l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm2 6h6v1.5H7V8Zm0 4h6v1.5H7V12Z" />
                   </svg>
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-plum-600">{item.title}</h3>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h3 className="font-semibold text-plum-600">{item.title}</h3>
+                    {item.date_text && (
+                      <span className="whitespace-nowrap rounded-md bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-700">
+                        {item.date_text}
+                      </span>
+                    )}
+                  </div>
                   {item.description && (
-                    <p className="mt-1 text-sm text-ink-600">{item.description}</p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{item.description}</p>
                   )}
                 </div>
-                {item.date_text && (
-                  <span className="rounded-md bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-700">
-                    {item.date_text}
-                  </span>
-                )}
               </div>
             </li>
           ))}
