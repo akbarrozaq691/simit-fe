@@ -12,22 +12,6 @@ import { Select } from '@/components/ui/Select'
 import { Spinner } from '@/components/ui/Spinner'
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table'
 
-/** The backend's fixed action vocabulary (src/audit.py). Kept in sync by hand —
- *  the API has no endpoint that enumerates it. */
-const ACTIONS = [
-  'article.created',
-  'article.status_changed',
-  'article.deleted',
-  'article.restored',
-  'article.version_submitted',
-  'reviewer.assigned',
-  'reviewer.unassigned',
-  'review.submitted',
-  'user.created',
-  'user.deleted',
-  'user.restored',
-]
-
 /** Fixed at 50: the API accepts 1..200 and rejects anything outside with 422. */
 const PAGE_SIZE = 50
 
@@ -64,6 +48,11 @@ export function AuditLog() {
     queryKey: ['users', true],
     queryFn: () => api.listUsers(true),
   })
+
+  // Served by the API rather than copied here: the hand-maintained copy of this
+  // list went stale the first time an action was added, so the new action was
+  // being recorded but could not be filtered for.
+  const actionsQuery = useQuery({ queryKey: ['audit-actions'], queryFn: api.listAuditActions })
 
   const filters = {
     entity_type: entityType || undefined,
@@ -117,7 +106,7 @@ export function AuditLog() {
             value={action}
             onChange={(e) => resetTo(() => setAction(e.target.value))}
             placeholder="All"
-            options={ACTIONS.map((a) => ({ value: a, label: a }))}
+            options={(actionsQuery.data ?? []).map((a) => ({ value: a, label: a }))}
           />
           <Select
             label="Actor"

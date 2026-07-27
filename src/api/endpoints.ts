@@ -140,4 +140,6 @@ export const api = {
     const qs = q.toString()
     return http.get<AuditEntry[]>(`/audit-log${qs ? `?${qs}` : ''}`)
   },
+  /** The action vocabulary, from the server — a hand-copied list went stale. */
+  listAuditActions: () => http.get<string[]>('/audit-log/actions'),
 }
