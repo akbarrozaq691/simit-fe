@@ -181,7 +181,7 @@ export function Register() {
             <Input
               label="Occupation"
               placeholder="e.g. Lecturer, Researcher, Engineer"
-              hint="Type your own — this one isn't a fixed list."
+              hint="Type your own, written how you prefer — this isn't a fixed list."
               error={fieldErrors.occupation_name?.message}
               {...register('occupation_name' as never)}
             />
@@ -189,7 +189,7 @@ export function Register() {
 
           <Input
             label="Institution"
-            hint="Optional"
+            hint="Optional. Written exactly as you type it."
             error={fieldErrors.institution_name?.message}
             {...register('institution_name')}
           />
