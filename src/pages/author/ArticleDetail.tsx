@@ -34,6 +34,8 @@ export function ArticleDetail() {
     enabled: !!id,
   })
   const topicsQuery = useQuery({ queryKey: ['topics'], queryFn: api.listTopics })
+  // Only needed once a decision names a journal; harmless before then.
+  const journalsQuery = useQuery({ queryKey: ['journals'], queryFn: api.listJournals })
 
   if (articleQuery.isLoading) {
     return (
@@ -60,6 +62,7 @@ export function ArticleDetail() {
 
   const article = articleQuery.data
   const topic = topicsQuery.data?.find((t) => t.id_topic === article.id_topic)
+  const journal = journalsQuery.data?.find((j) => j.id_journal === article.id_recommended_journal)
 
   async function handleAction(kind: 'full_paper' | 'revision') {
     if (!file) {
@@ -118,6 +121,17 @@ export function ArticleDetail() {
             <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">Topic</dt>
             <dd className="mt-0.5 text-sm text-ink-800">{topic?.topic_name ?? '—'}</dd>
           </div>
+          {/* The point of recording a recommended journal is to tell the author
+              where to take the paper next, so it belongs on their screen. The
+              API only returns its id. */}
+          {journal && (
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">
+                Recommended journal
+              </dt>
+              <dd className="mt-0.5 text-sm font-semibold text-plum-600">{journal.journal_name}</dd>
+            </div>
+          )}
         </dl>
         <div>
           <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">Abstract</dt>

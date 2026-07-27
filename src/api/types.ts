@@ -174,3 +174,9 @@ export interface DownloadUrl {
   /** Seconds the link stays valid. */
   expires_in: number
 }
+
+/** A reviewer as the assignment screen sees them: name and id, nothing more. */
+export interface ReviewerOption {
+  id_user: string
+  user_name: string
+}

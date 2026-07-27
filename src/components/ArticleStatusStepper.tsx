@@ -28,6 +28,10 @@ type StepState = 'done' | 'current' | 'upcoming'
 
 export function ArticleStatusStepper({ status }: { status: ArticleStatus }) {
   const rejected = status === 'rejected'
+  // Accepted is the end of the pipeline, so the last step is finished rather
+  // than in progress: showing it as the current step told an author whose paper
+  // had been accepted that something was still pending.
+  const accepted = status === 'accepted'
   const currentIndex = rejected ? -1 : STEP_INDEX[status]
 
   return (
@@ -36,11 +40,13 @@ export function ArticleStatusStepper({ status }: { status: ArticleStatus }) {
         {STEPS.map((label, i) => {
           const state: StepState = rejected
             ? 'upcoming'
-            : i < currentIndex
+            : accepted
               ? 'done'
-              : i === currentIndex
-                ? 'current'
-                : 'upcoming'
+              : i < currentIndex
+              ? 'done'
+                : i === currentIndex
+                  ? 'current'
+                  : 'upcoming'
           return (
             <li key={label} className="flex flex-1 items-center gap-2 sm:flex-col sm:items-stretch">
               <div className="flex items-center gap-2 sm:flex-col">

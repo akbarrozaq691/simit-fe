@@ -71,14 +71,17 @@ export function ArticleManage() {
     queryFn: () => api.listReviews(id!),
     enabled: !!id,
   })
-  const usersQuery = useQuery({ queryKey: ['users'], queryFn: () => api.listUsers() })
+  // Reviewers, not the whole user list: GET /users is admin-only, so an EIC —
+  // the role whose job this is — got a 403 and an empty picker, with reviewer
+  // names falling back to raw UUIDs.
+  const reviewersQuery = useQuery({ queryKey: ['reviewers'], queryFn: api.listReviewers })
   const journalsQuery = useQuery({ queryKey: ['journals'], queryFn: api.listJournals })
 
-  const users = usersQuery.data ?? []
+  const reviewers = reviewersQuery.data ?? []
   const nameFor = useMemo(() => {
-    const map = new Map(users.map((u) => [u.id_user, u.user_name]))
+    const map = new Map(reviewers.map((u) => [u.id_user, u.user_name]))
     return (userId: string) => map.get(userId) ?? userId
-  }, [users])
+  }, [reviewers])
 
   if (articleQuery.isLoading) {
     return (
@@ -111,7 +114,9 @@ export function ArticleManage() {
     return `${v.phase === 'abstract' ? 'Abstract' : 'Full paper'} v${v.version_number}`
   }
 
-  const candidates = users.filter((u) => u.role === 'SC' && !article.reviewers.includes(u.id_user))
+  // The endpoint returns SC members only, so this just drops the ones already on
+  // this article.
+  const candidates = reviewers.filter((u) => !article.reviewers.includes(u.id_user))
 
   async function invalidateAll() {
     await Promise.all([
@@ -291,7 +296,6 @@ export function ArticleManage() {
                     }
                   />
                   {u.user_name}
-                  {u.institution_name && <span className="text-xs text-ink-500">({u.institution_name})</span>}
                 </label>
               ))}
             </div>

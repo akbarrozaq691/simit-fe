@@ -1,7 +1,7 @@
 import { http } from './client'
 import type {
   Article, ArticleVersion, AuditEntry, DownloadUrl, FaqItem, GalleryImage, Journal, LandingContent,
-  Occupation, RegisterAs, Review, ScheduleItem, TimelineItem, TokenResponse, Topic,
+  Occupation, RegisterAs, Review, ReviewerOption, ScheduleItem, TimelineItem, TokenResponse, Topic,
   UploadResponse, User,
 } from './types'
 
@@ -65,6 +65,10 @@ export const api = {
     }),
 
   // users
+  /** Assignable reviewers (SC). Available to EIC as well as admin, unlike
+   *  listUsers — picking a reviewer needs names, not everyone's contact
+   *  details. */
+  listReviewers: () => http.get<ReviewerOption[]>('/users/reviewers'),
   listUsers: (includeDeleted = false) =>
     http.get<User[]>(`/users${includeDeleted ? '?include_deleted=true' : ''}`),
   getUser: (id: string) => http.get<User>(`/users/${id}`),
