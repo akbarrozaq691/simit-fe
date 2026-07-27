@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '@/api/endpoints'
 import { Logo } from '@/components/Logo'
+import mascot from '@/assets/mascot.webp'
 
 const SECTION_LINKS = [
   { to: '/#about', label: 'About' },
@@ -58,8 +59,27 @@ export function Footer() {
     Boolean(content.contact_address)
 
   return (
-    <footer className="mt-auto bg-gradient-to-br from-brand-50 via-plum-50 to-brand-100/60">
-      <div className="mx-auto max-w-6xl px-6 py-12">
+    // relative + visible overflow so the mascot can break out of the top edge
+    // instead of being clipped by it.
+    <footer className="relative mt-auto overflow-visible bg-gradient-to-br from-brand-50 via-plum-50 to-brand-100/60">
+      {/* Mascot leaning over the footer's top edge. Hidden below lg: at narrow
+          widths it would sit on top of the footer's own text, and a decorative
+          image should never cover content. */}
+      <div className="pointer-events-none absolute -top-32 right-6 hidden select-none lg:block xl:right-12">
+        <img
+          src={mascot}
+          alt=""
+          aria-hidden="true"
+          width={188}
+          height={220}
+          className="relative z-10 h-56 w-auto -rotate-6 drop-shadow-[0_20px_25px_rgba(92,24,65,0.3)]"
+        />
+        {/* Contact shadow on the footer's surface. Without it the mascot reads
+            as a sticker pasted on; with it, it reads as standing on the edge. */}
+        <span className="absolute bottom-1 left-1/2 h-4 w-32 -translate-x-1/2 rounded-[100%] bg-plum-700/25 blur-md" />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <div className="flex items-center gap-3">
