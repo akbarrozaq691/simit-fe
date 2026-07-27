@@ -1,5 +1,18 @@
 export type Role = 'admin' | 'EIC' | 'SC' | 'author'
 
+/** How a participant signed up. Null for accounts created before this existed
+ *  (the seeded admin, and staff accounts an admin creates directly). */
+export type RegisterAs = 'student' | 'general_presenter'
+
+/** The three curated student levels. Their ids are fixed by the backend seed
+ *  (db/schema.sql), so the form can offer them without a name lookup that an
+ *  admin could rename out from under it. */
+export const STUDENT_LEVELS = [
+  { id: '11111111-1111-4111-8111-111111111111', label: 'Bachelor Student' },
+  { id: '22222222-2222-4222-8222-222222222222', label: 'Master Student' },
+  { id: '33333333-3333-4333-8333-333333333333', label: 'Doctoral Student' },
+] as const
+
 /** Internal statuses (EIC/SC/admin) plus the coarser values authors receive. */
 export type ArticleStatus =
   | 'submitted'
@@ -59,6 +72,7 @@ export interface User {
   created_at: string
   role: Role
   occupation_name: string | null
+  register_as: RegisterAs | null
   deleted_at: string | null
 }
 

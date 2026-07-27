@@ -1,6 +1,6 @@
 import { http } from './client'
 import type {
-  Article, ArticleVersion, AuditEntry, Journal, Occupation, Review,
+  Article, ArticleVersion, AuditEntry, Journal, Occupation, RegisterAs, Review,
   TimelineItem, TokenResponse, Topic, UploadResponse, User,
 } from './types'
 
@@ -9,8 +9,16 @@ export const api = {
   login: (email: string, password: string) =>
     http.post<TokenResponse>('/auth/login', { email, password }),
   register: (body: {
-    user_name: string; email: string; password: string
-    occupation_name: string; institution_name?: string | null; phone_number?: string | null
+    user_name: string
+    email: string
+    password: string
+    register_as: RegisterAs
+    /** Required when register_as is 'student' — one of STUDENT_LEVELS. */
+    id_occupation?: string | null
+    /** Required when register_as is 'general_presenter' — freely typed. */
+    occupation_name?: string | null
+    institution_name?: string | null
+    phone_number?: string | null
   }) => http.post<{ id_user: string; user_name: string; email: string; role: string }>('/auth/register', body),
 
   // uploads
