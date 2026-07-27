@@ -24,6 +24,8 @@ export const api = {
 
   // uploads
   uploadPdf: (file: File) => http.upload<UploadResponse>('/uploads', file),
+  /** Admin-only: landing-page images (hero background, gallery photos). */
+  uploadImage: (file: File) => http.upload<UploadResponse>('/uploads/image', file),
 
   // articles
   listArticles: (includeDeleted = false) =>

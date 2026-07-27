@@ -1,12 +1,23 @@
 import { forwardRef, useId, useState, type InputHTMLAttributes } from 'react'
 
-interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'accept'> {
+interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string
   error?: string
+  /** Shown while no file is picked. Defaults to the paper-upload wording. */
+  hint?: string
 }
 
 export const FileInput = forwardRef<HTMLInputElement, Props>(function FileInput(
-  { label, error, className = '', onChange, id, ...rest },
+  {
+    label,
+    error,
+    hint = 'PDF only, up to 10 MB.',
+    accept = 'application/pdf',
+    className = '',
+    onChange,
+    id,
+    ...rest
+  },
   ref,
 ) {
   const [file, setFile] = useState<File | null>(null)
@@ -20,7 +31,7 @@ export const FileInput = forwardRef<HTMLInputElement, Props>(function FileInput(
         id={inputId}
         ref={ref}
         type="file"
-        accept="application/pdf"
+        accept={accept}
         onChange={(e) => {
           setFile(e.target.files?.[0] ?? null)
           onChange?.(e)
@@ -35,7 +46,7 @@ export const FileInput = forwardRef<HTMLInputElement, Props>(function FileInput(
           {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
         </span>
       )}
-      {!file && !error && <span className="mt-1 block text-xs text-ink-600">PDF only, up to 10 MB.</span>}
+      {!file && !error && <span className="mt-1 block text-xs text-ink-600">{hint}</span>}
       {error && <span className="mt-1 block text-xs font-medium text-rose-600">{error}</span>}
     </label>
   )

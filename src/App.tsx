@@ -17,6 +17,7 @@ import { EditorialDashboard } from '@/pages/editorial/EditorialDashboard'
 import { ArticleManage } from '@/pages/editorial/ArticleManage'
 import { Journals } from '@/pages/editorial/Journals'
 import { TimelineAdmin } from '@/pages/editorial/TimelineAdmin'
+import { SiteContent } from '@/pages/admin/SiteContent'
 import { Users } from '@/pages/admin/Users'
 import { Topics } from '@/pages/admin/Topics'
 import { Occupations } from '@/pages/admin/Occupations'
@@ -53,6 +54,7 @@ export default function App() {
                 <Route path="/editorial/:id" element={<ArticleManage />} />
               </Route>
               <Route element={<RequireRole roles={['admin']} />}>
+                <Route path="/admin/content" element={<SiteContent />} />
                 <Route path="/admin/users" element={<Users />} />
                 <Route path="/admin/topics" element={<Topics />} />
                 <Route path="/admin/occupations" element={<Occupations />} />
