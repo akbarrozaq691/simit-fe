@@ -121,6 +121,14 @@ export function ArticleDetail() {
             <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">Topic</dt>
             <dd className="mt-0.5 text-sm text-ink-800">{topic?.topic_name ?? '—'}</dd>
           </div>
+          {article.sub_topic && (
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">
+                Sub theme
+              </dt>
+              <dd className="mt-0.5 text-sm text-ink-800">{article.sub_topic}</dd>
+            </div>
+          )}
           {/* The point of recording a recommended journal is to tell the author
               where to take the paper next, so it belongs on their screen. The
               API only returns its id. */}

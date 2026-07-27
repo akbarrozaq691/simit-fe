@@ -37,6 +37,7 @@ export interface Article {
   status: ArticleStatus
   id_user: string
   id_topic: string | null
+  sub_topic: string | null
   id_recommended_journal: string | null
   reviewers: string[]
   created_at: string
@@ -159,13 +160,22 @@ export interface GalleryImage {
 }
 
 /** Everything the landing page renders, fetched in one request. */
+/** A topic as the landing page receives it: sub-theme names already flattened. */
+export interface LandingTopic {
+  id_topic: string
+  topic_name: string
+  description: string | null
+  sort_order: number
+  sub_topics: string[]
+}
+
 export interface LandingContent {
   /** Single-value text, keyed as seeded in db/schema.sql (hero_title, …). */
   content: Record<string, string>
   schedule: ScheduleItem[]
   faq: FaqItem[]
   gallery: GalleryImage[]
-  topics: Topic[]
+  topics: LandingTopic[]
   journals: Journal[]
 }
 

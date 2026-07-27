@@ -7,7 +7,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { Spinner } from '@/components/ui/Spinner'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { mapEmbedUrl } from '@/lib/venueMap'
-import type { FaqItem, GalleryImage, ScheduleItem, Topic } from '@/api/types'
+import type { FaqItem, GalleryImage, LandingTopic, ScheduleItem } from '@/api/types'
 
 /** Reads a CMS key, falling back to '' so a section renders empty rather than
  *  printing "undefined" when an admin hasn't filled it in yet. */
@@ -197,7 +197,13 @@ function Schedule({
   )
 }
 
-function SubThemes({ content, topics }: { content: Record<string, string>; topics: Topic[] }) {
+function SubThemes({
+  content,
+  topics,
+}: {
+  content: Record<string, string>
+  topics: LandingTopic[]
+}) {
   const { isAuthenticated } = useAuth()
 
   return (
@@ -210,19 +216,35 @@ function SubThemes({ content, topics }: { content: Record<string, string>; topic
       {topics.length === 0 ? (
         <p className="text-center text-sm text-ink-600">Sub themes will be announced soon.</p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3">
           {topics.map((topic) => (
             <div
               key={topic.id_topic}
-              className="flex flex-col rounded-xl border border-brand-100 bg-white p-5 text-center shadow-sm"
+              className="flex h-full flex-col rounded-xl border border-brand-100 bg-white p-5 shadow-sm"
             >
               <h3 className="font-bold text-plum-600">{topic.topic_name}</h3>
               {topic.description && (
-                <p className="mt-2 flex-1 text-sm text-ink-600">{topic.description}</p>
+                <p className="mt-1.5 text-sm text-ink-600">{topic.description}</p>
               )}
+
+              {/* The sub-themes are the point of this section — a track name
+                  alone does not tell an author whether their paper fits. */}
+              {topic.sub_topics.length > 0 && (
+                <ol className="mt-4 flex-1 space-y-2">
+                  {topic.sub_topics.map((name, index) => (
+                    <li key={name} className="flex gap-2.5 text-sm leading-snug text-ink-800">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11px] font-bold text-brand-700">
+                        {index + 1}
+                      </span>
+                      <span>{name}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
               <Link
                 to={isAuthenticated ? '/submit' : '/register'}
-                className="mt-4 rounded-lg bg-plum-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-plum-600"
+                className="mt-5 rounded-lg bg-plum-500 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-plum-600"
               >
                 {isAuthenticated ? 'Submit Abstract' : 'Register Now'}
               </Link>

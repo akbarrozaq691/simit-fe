@@ -240,6 +240,14 @@ export function ArticleManage() {
             <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">Keywords</dt>
             <dd className="mt-0.5 text-sm text-ink-800">{article.keywords || '—'}</dd>
           </div>
+          {article.sub_topic && (
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">
+                Sub theme
+              </dt>
+              <dd className="mt-0.5 text-sm text-ink-800">{article.sub_topic}</dd>
+            </div>
+          )}
         </dl>
         <div>
           <dt className="text-xs font-medium uppercase tracking-wide text-ink-500">Abstract</dt>

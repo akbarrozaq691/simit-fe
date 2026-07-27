@@ -33,7 +33,7 @@ export const api = {
   getArticle: (id: string) => http.get<Article>(`/articles/${id}`),
   createArticle: (body: {
     title: string; authors: string; abstract: string; keywords?: string | null
-    abstract_file_path: string; id_topic?: string | null
+    abstract_file_path: string; id_topic?: string | null; sub_topic?: string | null
   }) => http.post<Article>('/articles', body),
   updateArticle: (id: string, body: Record<string, unknown>) =>
     http.patch<Article>(`/articles/${id}`, body),
