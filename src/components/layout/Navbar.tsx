@@ -57,7 +57,10 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-ink-200 bg-white/90 backdrop-blur">
+    // Opaque rather than translucent-and-blurred: a backdrop-filter on a sticky
+    // bar re-blurs the strip under it on every scrolled frame, which is what
+    // made scrolling stutter.
+    <header className="sticky top-0 z-20 border-b border-ink-200 bg-white">
       <nav className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <Logo />

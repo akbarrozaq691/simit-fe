@@ -32,6 +32,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Smooth scrolling is motion someone may have asked the OS to stop. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   @apply bg-ink-50 text-ink-800 font-sans antialiased;
 }

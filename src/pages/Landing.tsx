@@ -6,6 +6,7 @@ import { ApiError } from '@/api/client'
 import { useAuth } from '@/auth/AuthContext'
 import { Spinner } from '@/components/ui/Spinner'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { mapEmbedUrl } from '@/lib/venueMap'
 import type { FaqItem, GalleryImage, ScheduleItem, Topic } from '@/api/types'
 
 /** Reads a CMS key, falling back to '' so a section renders empty rather than
@@ -242,23 +243,46 @@ function Venue({ content }: { content: Record<string, string> }) {
 
   const body = text(content, 'venue_body')
   const heading = text(content, 'venue_heading')
+  const mapUrl = mapEmbedUrl(text(content, 'venue_coordinates'))
   // Hide the section entirely rather than showing a lone heading over nothing.
-  if (!heading && !body && rows.length === 0) return null
+  if (!heading && !body && rows.length === 0 && !mapUrl) return null
 
   return (
     <Section id="venue" tinted>
-      <h2 className="text-2xl font-bold text-plum-600">{heading}</h2>
-      {body && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-700">{body}</p>}
-      {rows.length > 0 && (
-        <dl className="mt-8 space-y-4">
-          {rows.map((row) => (
-            <div key={row.label}>
-              <dt className="text-sm font-semibold text-plum-600">{row.label}</dt>
-              <dd className="text-sm text-ink-700">{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      {/* Details left, map right — reading the address and seeing where it is
+          belong side by side. Stacks below md, where two columns would leave
+          both too narrow to be useful. */}
+      <div className="grid items-start gap-10 md:grid-cols-2">
+        <div>
+          <h2 className="text-2xl font-bold text-plum-600">{heading}</h2>
+          {body && <p className="mt-3 text-sm leading-relaxed text-ink-700">{body}</p>}
+          {rows.length > 0 && (
+            <dl className="mt-8 space-y-4">
+              {rows.map((row) => (
+                <div key={row.label}>
+                  <dt className="text-sm font-semibold text-plum-600">{row.label}</dt>
+                  <dd className="text-sm text-ink-700">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+
+        {mapUrl && (
+          <div className="overflow-hidden rounded-xl border border-plum-100 shadow-sm">
+            <iframe
+              src={mapUrl}
+              title={heading ? `Map of ${heading}` : 'Venue map'}
+              className="h-80 w-full border-0 md:h-96"
+              // Defer the map until it is nearly in view: it is the heaviest
+              // thing on the page and sits well below the fold.
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+        )}
+      </div>
     </Section>
   )
 }

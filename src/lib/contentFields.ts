@@ -77,6 +77,12 @@ export const CONTENT_SECTIONS: ContentSection[] = [
       { key: 'venue_address', label: 'Address', kind: 'textarea' },
       { key: 'venue_main', label: 'Main venue', kind: 'text' },
       { key: 'venue_metro', label: 'Nearest metro', kind: 'text' },
+      {
+        key: 'venue_coordinates',
+        label: 'Map location',
+        kind: 'text',
+        hint: 'Coordinates like 39.9334, 32.8597 — or paste the Google Maps link. Leave empty to hide the map.',
+      },
     ],
   },
   {
