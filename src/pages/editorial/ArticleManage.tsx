@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { Spinner } from '@/components/ui/Spinner'
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table'
+import { assignErrorMessage, type AssignError } from '@/lib/coiError'
 import { statusLabel, statusTone } from '@/lib/status'
 import type { Tone } from '@/lib/status'
 import type { Review } from '@/api/types'
@@ -38,7 +39,7 @@ export function ArticleManage() {
   // Assign-reviewers panel state
   const [selectedReviewers, setSelectedReviewers] = useState<string[]>([])
   const [overrideCoi, setOverrideCoi] = useState(false)
-  const [assignError, setAssignError] = useState<string | null>(null)
+  const [assignError, setAssignError] = useState<AssignError | null>(null)
   const [assigning, setAssigning] = useState(false)
   const [unassigningId, setUnassigningId] = useState<string | null>(null)
   const [unassignError, setUnassignError] = useState<string | null>(null)
@@ -160,7 +161,7 @@ export function ArticleManage() {
       setOverrideCoi(false)
       await invalidateAll()
     } catch (err) {
-      setAssignError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
+      setAssignError(assignErrorMessage(err, nameFor))
     } finally {
       setAssigning(false)
     }
@@ -270,7 +271,9 @@ export function ArticleManage() {
 
         <div className="flex flex-col gap-3 rounded-lg bg-ink-50 p-4 ring-1 ring-ink-200">
           <h3 className="text-sm font-semibold text-ink-800">Assign reviewers</h3>
-          {assignError && <ErrorState message={assignError} />}
+          {assignError && (
+            <ErrorState title={assignError.title} message={assignError.message} />
+          )}
           {candidates.length === 0 ? (
             <p className="text-sm text-ink-600">No eligible SC members left to assign.</p>
           ) : (
