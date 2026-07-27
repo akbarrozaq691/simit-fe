@@ -3,7 +3,10 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "${FE_PORT:-3000}:80"
+      # FE_BIND=127.0.0.1 when nginx on the host is the edge: the container is
+      # then reachable only through that proxy, not directly from the network.
+      # Left on 0.0.0.0 by default so `docker-compose up` alone still serves.
+      - "${FE_BIND:-0.0.0.0}:${FE_PORT:-3000}:80"
     environment:
       # The backend runs from its own compose project in ../be, so reach it
       # through the host. On Linux, see README for the host-gateway flag.
