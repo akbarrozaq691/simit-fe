@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '@/api/endpoints'
+import { DownloadVersionButton } from '@/components/DownloadVersionButton'
 import { ApiError } from '@/api/client'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -163,8 +164,8 @@ export function ReviewDetail() {
                 <TR key={v.id_version}>
                   <TD className="capitalize">{v.phase.replace('_', ' ')}</TD>
                   <TD>{v.version_number}</TD>
-                  <TD className="max-w-xs truncate" title={v.file_path}>
-                    {v.file_path}
+                  <TD>
+                    <DownloadVersionButton idArticle={id!} idVersion={v.id_version} />
                   </TD>
                   <TD>{new Date(v.submitted_at).toLocaleDateString()}</TD>
                 </TR>

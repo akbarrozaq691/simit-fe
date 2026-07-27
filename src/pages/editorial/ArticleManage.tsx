@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '@/api/endpoints'
+import { DownloadVersionButton } from '@/components/DownloadVersionButton'
 import { ApiError } from '@/api/client'
 import { useAuth } from '@/auth/AuthContext'
 import { Badge } from '@/components/ui/Badge'
@@ -311,6 +312,39 @@ export function ArticleManage() {
             Assign
           </Button>
         </div>
+      </Card>
+
+      {/* Submitted files. An editor deciding an outcome has to be able to read
+          the paper, and the stored path is private — hence a button per version
+          rather than a link. */}
+      <Card>
+        <h2 className="mb-3 text-sm font-semibold text-ink-800">Submitted files</h2>
+        {versions.length === 0 ? (
+          <p className="text-sm text-ink-600">No versions submitted yet.</p>
+        ) : (
+          <Table>
+            <THead>
+              <TR>
+                <TH>Phase</TH>
+                <TH>Version</TH>
+                <TH>Submitted</TH>
+                <TH>File</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {versions.map((v) => (
+                <TR key={v.id_version}>
+                  <TD className="capitalize">{v.phase.replace('_', ' ')}</TD>
+                  <TD>{v.version_number}</TD>
+                  <TD>{new Date(v.submitted_at).toLocaleDateString()}</TD>
+                  <TD>
+                    <DownloadVersionButton idArticle={id!} idVersion={v.id_version} />
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        )}
       </Card>
 
       {/* Reviews panel */}

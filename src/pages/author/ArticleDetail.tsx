@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '@/api/endpoints'
+import { DownloadVersionButton } from '@/components/DownloadVersionButton'
 import { ApiError } from '@/api/client'
 import { ArticleStatusStepper } from '@/components/ArticleStatusStepper'
 import { Badge } from '@/components/ui/Badge'
@@ -135,6 +136,7 @@ export function ArticleDetail() {
                 <TH>Phase</TH>
                 <TH>Version</TH>
                 <TH>Submitted</TH>
+                <TH>File</TH>
               </TR>
             </THead>
             <TBody>
@@ -143,6 +145,9 @@ export function ArticleDetail() {
                   <TD className="capitalize">{v.phase.replace('_', ' ')}</TD>
                   <TD>{v.version_number}</TD>
                   <TD>{new Date(v.submitted_at).toLocaleDateString()}</TD>
+                  <TD>
+                    <DownloadVersionButton idArticle={id!} idVersion={v.id_version} />
+                  </TD>
                 </TR>
               ))}
             </TBody>

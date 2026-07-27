@@ -168,3 +168,9 @@ export interface LandingContent {
   topics: Topic[]
   journals: Journal[]
 }
+
+export interface DownloadUrl {
+  download_url: string
+  /** Seconds the link stays valid. */
+  expires_in: number
+}

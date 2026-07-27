@@ -1,6 +1,6 @@
 import { http } from './client'
 import type {
-  Article, ArticleVersion, AuditEntry, FaqItem, GalleryImage, Journal, LandingContent,
+  Article, ArticleVersion, AuditEntry, DownloadUrl, FaqItem, GalleryImage, Journal, LandingContent,
   Occupation, RegisterAs, Review, ScheduleItem, TimelineItem, TokenResponse, Topic,
   UploadResponse, User,
 } from './types'
@@ -40,6 +40,9 @@ export const api = {
   deleteArticle: (id: string) => http.del<void>(`/articles/${id}`),
   restoreArticle: (id: string) => http.post<Article>(`/articles/${id}/restore`),
   listVersions: (id: string) => http.get<ArticleVersion[]>(`/articles/${id}/versions`),
+  /** Papers are stored privately; this mints a short-lived URL to read one. */
+  getVersionDownloadUrl: (id: string, idVersion: string) =>
+    http.get<DownloadUrl>(`/articles/${id}/versions/${idVersion}/download`),
   listReviews: (id: string) => http.get<Review[]>(`/articles/${id}/reviews`),
   submitFullPaper: (id: string, full_paper_file_path: string) =>
     http.post<Article>(`/articles/${id}/full-paper`, { full_paper_file_path }),
