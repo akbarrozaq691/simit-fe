@@ -68,6 +68,21 @@ export const CONTENT_SECTIONS: ContentSection[] = [
     ],
   },
   {
+    id: 'template',
+    label: 'Download Template',
+    description: 'Link to the paper/abstract template file, shown on the landing page.',
+    fields: [
+      { key: 'template_heading', label: 'Heading', kind: 'text' },
+      { key: 'template_description', label: 'Description', kind: 'textarea' },
+      {
+        key: 'template_url',
+        label: 'File URL',
+        kind: 'text',
+        hint: 'Direct link to the template, e.g. a Google Drive/Docs share link. Leave empty to hide the button.',
+      },
+    ],
+  },
+  {
     id: 'output',
     label: 'Output',
     description:

@@ -265,6 +265,33 @@ function SubThemes({
   )
 }
 
+function Template({ content }: { content: Record<string, string> }) {
+  const heading = text(content, 'template_heading')
+  const description = text(content, 'template_description')
+  const url = text(content, 'template_url')
+  // Hidden entirely when unset: no button pointing nowhere.
+  if (!heading && !description && !url) return null
+
+  return (
+    <Section id="template">
+      <SectionHeading title={heading} />
+      <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        {description && <p className="text-sm leading-relaxed text-ink-700">{description}</p>}
+        {url && (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center rounded-lg bg-plum-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-plum-600"
+          >
+            Download Template
+          </a>
+        )}
+      </div>
+    </Section>
+  )
+}
+
 function Output({
   content,
   journals,
@@ -451,6 +478,7 @@ export function Landing() {
       <About content={content} gallery={gallery} />
       <Schedule content={content} schedule={schedule} />
       <SubThemes content={content} topics={topics} />
+      <Template content={content} />
       <Output content={content} journals={journals} />
       <Venue content={content} />
       <Faq content={content} faq={faq} />
